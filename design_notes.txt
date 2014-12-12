@@ -1,0 +1,48 @@
+modules
+  db
+    the models should be created and ecported only after the connection is established started
+    so export connectToDb, which in turn returns all the models
+
+    interface to export
+      {
+        setupMongoAndStartServer
+        UserModel 
+        PostsModel
+      }
+
+  router
+  api
+  auth
+
+
+  ===
+
+  db
+    index.js
+    schemas
+      user
+      post
+
+  router
+    index.js
+    routes
+      users
+      posts
+
+  auth
+    index.js
+    strategy
+      local
+
+  middlewares
+    index.js
+    ensureAuthentication
+
+  config
+    index -- use nconf
+      in path give the absolute path
+    config_production.json
+    config_development.json
+
+
+
