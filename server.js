@@ -14,7 +14,3 @@ database.once('open', function callback () {
     logger.info('Server started');
   });
 });
-
-
-
-
