@@ -3,9 +3,9 @@ var router = express.Router();
 var logger = require('nlogger').logger(module);
 var db = require('../../db');
 var postModel = db.model('post');
-//var ensureAuthenticated = require('../../middlewares/ensureAuthenticated');
+var ensureAuthenticated = require('../../middlewares/ensureAuthentication');
 
-router.get('/', function(req, res) {
+router.get('/', ensureAuthenticated, function(req, res) {
   var userId = req.query.userId;
   if (userId) {
     postModel.find({author: userId}, function(err, posts){
@@ -20,7 +20,7 @@ router.get('/', function(req, res) {
   }
 });
 
-router.post('/', function(req, res){
+router.post('/', ensureAuthenticated, function(req, res){
   logger.info("attempting to add post : ", req.body);
   if(req.user.id != req.body.author) {
     logger.error("unauthorized post attempt by user: ",req.user.id);
