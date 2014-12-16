@@ -6,6 +6,9 @@ require('./router')(app);
 
 var logger = require('nlogger').logger(module);
 
+var nconf = require('./config');
+console.log('nconf: ' + nconf.get('username'));
+
 var database = require('./db');
 database.on('error', console.error.bind(console, 'connection error:'));
 database.once('open', function callback () {
