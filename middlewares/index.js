@@ -1,4 +1,3 @@
-
 var bodyParser = require('body-parser');
 var passport = require('../auth');
 var cookieParser = require('cookie-parser');
