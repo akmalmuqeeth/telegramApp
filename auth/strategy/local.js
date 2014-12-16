@@ -9,13 +9,8 @@ module.exports = function (username, password, done) {
     if (!user) return done(null,null, 'user not found');
 
     bcrypt.compare(password, user.password, function(err, res) {
-      if (res) {
-      done(null, user);
-      } else {
-        logger.debug('authentication failed for u: ',username,' p: ',password ); 
-        done(null, null, 'password not matched');
-      } 
+      if (res) return done(null, user);      
+      return done(null, null, 'password not matched');
     });
-    
   });  
 };
