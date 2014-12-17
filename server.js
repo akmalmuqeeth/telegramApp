@@ -11,8 +11,8 @@ conn.on('error', function(err) {
   logger.error('Error connecting to the database: ', err)
 });
 conn.once('open', function callback () {
-  logger.info("Connected to telegramDb");
-  app.listen(3000, function() {
+  logger.info("Connected to telegramDb on ", nconf.get('PORT'));
+  app.listen(nconf.get('PORT'), function() {
     logger.info('Server started');
   });
 });

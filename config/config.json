@@ -1,4 +1,5 @@
 {
-    "username" : "root",
-    "password" : "foot"
+    "PORT" : 3000,
+    "expressSessionSecretKey" : "mySecretKey",
+    "localDatabase" : "mongodb://localhost/telegramDb"
 }
