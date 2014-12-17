@@ -3,8 +3,7 @@ var router = express.Router();
 var passport = require('../../auth');
 var logger = require('nlogger').logger(module);
 var bcrypt = require('bcrypt');
-var db = require('../../db');
-var userModel = db.model('user');
+var User = require('../../db').model('user');
 var randomstring = require("randomstring");
 var nconf = require("../../config");
 var mailgun = require('mailgun-js')(nconf.get('mailgun'));
@@ -38,7 +37,7 @@ function handleLoginRequest(req, res) {
 }
 
 function handleGetUsersRequest(req, res) {
-  userModel.find({}, function(err, users) {
+  User.find({}, function(err, users) {
     if(err) {
       return res.status(500).end();
     }
@@ -51,7 +50,7 @@ function handleGetUsersRequest(req, res) {
 
 // get user by id
 router.get('/:userId', function(req, res) {
-  userModel.findOne({id : req.params.userId }, function(err, user) {
+  User.findOne({id : req.params.userId }, function(err, user) {
     if (err) return res.status(500).send('error getting user by id');
     return res.send({users : [user.makeEmberUser()]});
   });
@@ -64,7 +63,7 @@ router.post('/', function(req, res) {
     var userPassword = req.body.password;
     bcrypt.genSalt(10, function(err, salt) {
     bcrypt.hash(userPassword, salt, function(err, hashOfPassword) {
-      var user = new userModel({id:req.body.id,password:hashOfPassword,
+      var user = new User({id:req.body.id,password:hashOfPassword,
        name: req.body.name, email : req.body.email});
       user.save(function(err, user) {
         if(err) {
@@ -89,7 +88,7 @@ router.post('/', function(req, res) {
 // reset password
 router.post('/reset-password', function(req, res) {
   if(req.body.email) {
-    userModel.findOne({email : req.body.email }, function(err, user){
+    User.findOne({email : req.body.email }, function(err, user){
       if (err) {
         return res.status(500).send('error while fetching user by email');
       }
@@ -97,7 +96,7 @@ router.post('/reset-password', function(req, res) {
       bcrypt.genSalt(10, function(err, salt) {
         bcrypt.hash(newPassword, salt, function(err, hashOfPassword) {
           user.password = hashOfPassword;
-          userModel.findByIdAndUpdate(user._id, {$set: {password : hashOfPassword }}, function(err, updatedUser){
+          User.findByIdAndUpdate(user._id, {$set: {password : hashOfPassword }}, function(err, updatedUser){
             if (err) { 
               return res.status(500).send('error saving user after password reset');
             } 
