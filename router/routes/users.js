@@ -8,6 +8,9 @@ var userModel = db.model('user');
 var randomstring = require("randomstring");
 var nconf = require("../../config");
 var mailgun = require('mailgun-js')(nconf.get('mailgun'));
+var fs = require('fs');
+var Handlebars = require('handlebars');
+
 
 // login and getAllUsers
 router.get('/',function(req,res) {
@@ -75,40 +78,53 @@ router.post('/', function(req, res) {
 
 // reset password
 router.post('/reset-password', function(req, res) {
-  if(req.body && req.body.email) {
-    userModel.findOne({email : req.body.email }, function(err, user) {
-    if (err) return res.status(500).send('error while fetching user by email');
-    var newPassword = randomstring.generate(7);
-  
-    // encrypt new password and save
-    bcrypt.genSalt(10, function(err, salt) {
-      bcrypt.hash(newPassword, salt, function(err, hashOfPassword) {
-        user.password = hashOfPassword;
-        user.save(function(err, user) {
-          if (err) return res.status(500).send('error saving user after password reset');
-          sendPasswordResetEmail(newPassword);
-          return res.status(200).end();
+  if(req.body.email) {
+    userModel.findOne({email : req.body.email }, function(err, user){
+      if (err) {
+        return res.status(500).send('error while fetching user by email');
+      }
+      var newPassword = randomstring.generate(7);
+      bcrypt.genSalt(10, function(err, salt) {
+        bcrypt.hash(newPassword, salt, function(err, hashOfPassword) {
+          user.password = hashOfPassword;
+          userModel.findByIdAndUpdate(user._id, {$set: {password : hashOfPassword }}, function(err, updatedUser){
+            if (err) { 
+              return res.status(500).send('error saving user after password reset');
+            } 
+            sendPasswordResetEmail(newPassword, function(err){
+              return res.status(200).end();
+            });
+          });
         });
       });
     });
-  });
   } else {
     res.status(404).end();
   }
 });
 
-function sendPasswordResetEmail(newPassword) {
-  var data = {
+function sendPasswordResetEmail(newPassword, done) {
+  
+  fs.readFile('/Users/akmalmuqeeth/Documents/meantest/telegramApp/templates/reset.hbs', 'utf-8',function (err, data) {
+    if (err) throw err;
+
+    var template = Handlebars.compile(data);
+
+    var context = {password: newPassword}
+    var html    = template(context);
+
+    var mailgunData = {
     from: 'Telegram App Team <akmalmuq@gmail.com>',
     to: 'akmalmuqeeth@gmail.com',
     subject: 'Your new password',
-    text: 'Heres your new password : ' + newPassword
-  };
+    html: html
+    };
 
-  mailgun.messages().send(data, function (error, body) {
-    
+    mailgun.messages().send(mailgunData, function (error, body) {
+      done(error);
+    });
+
   });
-
 }
 
-module.exports = router
+module.exports = router;
