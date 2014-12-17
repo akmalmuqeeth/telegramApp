@@ -15,7 +15,15 @@ var Handlebars = require('handlebars');
 // login and getAllUsers
 router.get('/',function(req,res) {
   if(req.query.operation == 'login') {
-    logger.info("attempting to login");
+    return handleLoginRequest(req, res);
+  } else { 
+    logger.info("retrieving all users");
+    return handleGetUsersRequest(req, res);
+  }     
+});
+
+function handleLoginRequest(req, res) {
+  logger.info("attempting to login");
     var authenticate = passport.authenticate('local', function(err, user, info) {
       if (err) return res.status(500).end(); 
       if (!user) return res.status(404).send(info);
@@ -26,12 +34,8 @@ router.get('/',function(req,res) {
         return res.send({users : [emberuser]});
       });
     });
-    authenticate(req, res);
-  } else { 
-    logger.info("retrieving all users");
-    return handleGetUsersRequest(req, res);
-  }     
-});
+  authenticate(req, res);
+}
 
 function handleGetUsersRequest(req, res) {
   userModel.find({}, function(err, users) {
