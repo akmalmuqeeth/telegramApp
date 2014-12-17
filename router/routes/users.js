@@ -27,23 +27,29 @@ router.get('/',function(req,res) {
       });
     });
     authenticate(req, res);
-  } else { //return all users
+  } else { 
     logger.info("retrieving all users");
-    userModel.find({}, function(err, users) {
-      if(err) return res.status(500).end();
-      var emberUsers = users.map(function(user) {
-        return user.makeEmberUser();
-      });
-      return res.send({users : emberUsers});
-    });
+    return handleGetUsersRequest(req, res);
   }     
 });
+
+function handleGetUsersRequest(req, res) {
+  userModel.find({}, function(err, users) {
+    if(err) {
+      return res.status(500).end();
+    }
+    var emberUsers = users.map(function(user) {
+      return user.makeEmberUser();
+    });
+    return res.send({users : emberUsers});
+  });
+}
 
 // get user by id
 router.get('/:userId', function(req, res) {
   userModel.findOne({id : req.params.userId }, function(err, user) {
     if (err) return res.status(500).send('error getting user by id');
-    return res.send({users : [user]});
+    return res.send({users : [user.makeEmberUser()]});
   });
 });
 
