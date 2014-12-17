@@ -24,8 +24,7 @@ router.post('/', ensureAuthenticated, function(req, res){
   logger.info("attempting to add post : ", req.body);
   if(req.user.id != req.body.author) {
     logger.error("unauthorized post attempt by user: ",req.user.id);
-    return res.status(403).send('you do not have permission to add post for ' 
-        +req.body.author);
+    return res.status(403).end();
   } else {
     var post = new postModel({author: req.body.author, body:req.body.body,  date: Date.now()});
     post.save(function(err, user){
