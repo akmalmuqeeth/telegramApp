@@ -37,4 +37,4 @@ router.post('/', ensureAuthenticated, function(req, res){
   }
 });
 
-module.exports = router
+module.exports = router;

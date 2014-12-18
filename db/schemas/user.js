@@ -11,4 +11,4 @@ userSchema.methods.makeEmberUser = function () {
    return {username: this.id, email: this.email};
 }
 
-module.exports = userSchema
+module.exports = userSchema;

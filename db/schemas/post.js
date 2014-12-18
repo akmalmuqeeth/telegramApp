@@ -5,4 +5,4 @@ var postSchema = mongoose.Schema (
     body : String,
     date : Date
   });
-module.exports = postSchema
+module.exports = postSchema;

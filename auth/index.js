@@ -18,4 +18,4 @@ passport.deserializeUser(function(id, done) {
 var localStrategy = require('./strategy/local');
 passport.use(new passportLocal.Strategy(localStrategy));
 
-module.exports = passport
+module.exports = passport;
