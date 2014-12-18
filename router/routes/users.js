@@ -21,33 +21,6 @@ router.get('/',function(req,res) {
   }     
 });
 
-function handleLoginRequest(req, res) {
-  logger.info("attempting to login");
-    var authenticate = passport.authenticate('local', function(err, user, info) {
-      if (err) return res.status(500).end(); 
-      if (!user) return res.status(404).send(info);
-      logger.info('login successful. user: ', user.makeEmberUser());   
-      req.logIn(user, function(err) { 
-        if (err) return res.status(500).end();
-        var emberuser = user.makeEmberUser();
-        return res.send({users : [emberuser]});
-      });
-    });
-  authenticate(req, res);
-}
-
-function handleGetUsersRequest(req, res) {
-  User.find({}, function(err, users) {
-    if(err) {
-      return res.status(500).end();
-    }
-    var emberUsers = users.map(function(user) {
-      return user.makeEmberUser();
-    });
-    return res.send({users : emberUsers});
-  });
-}
-
 // get user by id
 router.get('/:userId', function(req, res) {
   User.findOne({id : req.params.userId }, function(err, user) {
@@ -61,7 +34,6 @@ router.post('/', function(req, res) {
   logger.info("attempting to add user with req: ", req.body);
   if (req.body) {
     var userPassword = req.body.password;
-
     User.hashPassword(userPassword, function(err, hashedPassword) {
       if( err ){
         logger.error('Error hashing password. Error: ' ,err);
@@ -77,22 +49,6 @@ router.post('/', function(req, res) {
     res.status(404).end();    
   }
 });
-
-function saveUser(user,req,res) {
-  user.save(function(err, user){
-    if(err) {
-      logger.error(err);
-      return res.status(500).end();
-    }
-    logger.info("user saved successfully");
-    req.logIn(user, function(err) { 
-      if (err) {
-        return res.status(500).end();
-      }
-      return res.send({user: user.makeEmberUser()});
-    });
-  });
-}
 
 // reset password
 router.post('/reset-password', function(req, res) {
@@ -142,6 +98,49 @@ function sendPasswordResetEmail(newPassword, done) {
       done(error);
     });
 
+  });
+}
+
+function handleLoginRequest(req, res) {
+  logger.info("attempting to login");
+    var authenticate = passport.authenticate('local', function(err, user, info) {
+      if (err) return res.status(500).end(); 
+      if (!user) return res.status(404).send(info);
+      logger.info('login successful. user: ', user.makeEmberUser());   
+      req.logIn(user, function(err) { 
+        if (err) return res.status(500).end();
+        var emberuser = user.makeEmberUser();
+        return res.send({users : [emberuser]});
+      });
+    });
+  authenticate(req, res);
+}
+
+function handleGetUsersRequest(req, res) {
+  User.find({}, function(err, users) {
+    if(err) {
+      return res.status(500).end();
+    }
+    var emberUsers = users.map(function(user) {
+      return user.makeEmberUser();
+    });
+    return res.send({users : emberUsers});
+  });
+}
+
+function saveUser(user,req,res) {
+  user.save(function(err, user){
+    if(err) {
+      logger.error(err);
+      return res.status(500).end();
+    }
+    logger.info("user saved successfully");
+    req.logIn(user, function(err) { 
+      if (err) {
+        return res.status(500).end();
+      }
+      return res.send({user: user.makeEmberUser()});
+    });
   });
 }
 
