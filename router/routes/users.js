@@ -61,29 +61,38 @@ router.post('/', function(req, res) {
   logger.info("attempting to add user with req: ", req.body);
   if (req.body) {
     var userPassword = req.body.password;
-    bcrypt.genSalt(10, function(err, salt) {
-    bcrypt.hash(userPassword, salt, function(err, hashOfPassword) {
-      var user = new User({id:req.body.id,password:hashOfPassword,
+
+    User.hashPassword(userPassword, function(err, hashedPassword) {
+      if( err ){
+        logger.error('Error hashing password. Error: ' ,err);
+        return res.status(500).end();
+      }
+      var user = new User({id:req.body.id,password:hashedPassword,
        name: req.body.name, email : req.body.email});
-      user.save(function(err, user) {
-        if(err) {
-          logger.error(err);
-          return res.status(500).end();
-        }
-      logger.info("user saved successfully");
-      req.logIn(user, function(err) { 
-        if (err) return res.status(500).end();
-          return res.send({user: user.makeEmberUser()});
-        });
-      });
+      return saveUser(user, req, res);
     });
-  });
 
   } else {
     logger.error("failed to add user with req: " , req.body);
     res.status(404).end();    
   }
 });
+
+function saveUser(user,req,res) {
+  user.save(function(err, user){
+    if(err) {
+      logger.error(err);
+      return res.status(500).end();
+    }
+    logger.info("user saved successfully");
+    req.logIn(user, function(err) { 
+      if (err) {
+        return res.status(500).end();
+      }
+      return res.send({user: user.makeEmberUser()});
+    });
+  });
+}
 
 // reset password
 router.post('/reset-password', function(req, res) {
