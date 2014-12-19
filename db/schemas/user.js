@@ -11,6 +11,12 @@ userSchema.methods.makeEmberUser = function () {
    return {username: this.id, email: this.email};
 }
 
+userSchema.methods.checkUserPassword = function (userPassword, done) {
+  bcrypt.compare(userPassword, this.password, function(err, res) {
+    return done(res);
+  });
+}
+
 userSchema.statics.hashPassword = function(password, done){
   bcrypt.genSalt(10, function(err, salt) {
     bcrypt.hash(password, salt, function(err, hashedPassword){
