@@ -14,8 +14,11 @@ module.exports = function (username, password, done) {
     }
 
     bcrypt.compare(password, user.password, function(err, res) {
-      if (res) return done(null, user);      
-      return done(null, null, 'password not matched');
+      if (res) {
+        return done(null, user);
+      } else  {
+        return done(null, null, 'password not matched');
+      }    
     });
   });  
 };
