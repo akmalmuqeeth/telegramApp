@@ -18,6 +18,8 @@ router.get('/',function(req,res) {
     return handleLoginRequest(req, res);
   } else if(req.query.operation == 'following') {
     return getFollowingForUser(req, res);
+  } else if(req.query.operation == 'followers') {
+    return getFollowersForUser(req, res);
   } else { 
     logger.info("retrieving all users");
     return handleGetUsersRequest(req, res);
@@ -111,7 +113,20 @@ function getFollowingForUser(req,res) {
   });
 }
 
+function getFollowersForUser(req, res){
+  User.find({'following' : {$in : [req.query.userID]} }, function(err, users){
+    if(err) {
+      return res.status(500).end();
+    }    
 
+  var followers = users.map(function(user) {
+      return user.id;
+    });
+
+    return res.send({followers : followers});
+  });
+
+}
 
 function sendPasswordResetEmail(newPassword, done) {
   
