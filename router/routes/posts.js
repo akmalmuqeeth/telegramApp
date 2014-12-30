@@ -4,6 +4,7 @@ var logger = require('nlogger').logger(module);
 var Post = require('../../db').model('post');
 var ensureAuthenticated = require('../../middlewares/ensureAuthentication');
 
+// get posts
 router.get('/', ensureAuthenticated, function(req, res) {
   var userId = req.query.userId;
   if (userId) {
@@ -19,6 +20,7 @@ router.get('/', ensureAuthenticated, function(req, res) {
   }
 });
 
+// add a post
 router.post('/', ensureAuthenticated, function(req, res){
   logger.info("attempting to add post : ", req.body);
   if(req.user.id != req.body.author) {

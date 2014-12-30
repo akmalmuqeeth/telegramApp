@@ -9,16 +9,30 @@ var nconf = require("../../config");
 var mailgun = require('mailgun-js')(nconf.get('mailgun'));
 var fs = require('fs');
 var Handlebars = require('handlebars');
+var ensureAuthenticated = require('../../middlewares/ensureAuthentication');
 
 
 // login and getAllUsers
 router.get('/',function(req,res) {
   if(req.query.operation == 'login') {
     return handleLoginRequest(req, res);
+  } else if(req.query.operation == 'following') {
+    return getFollowingForUser(req, res);
   } else { 
     logger.info("retrieving all users");
     return handleGetUsersRequest(req, res);
   }     
+});
+
+// follow user
+router.put('/', ensureAuthenticated, function(req,res) {
+  if(req.query.operation == 'follow') {
+    return handleFollowUserRequest(req,res);
+  } if (req.query.operation == 'unfollow') {
+    return handleUnFollowUserRequest(req, res);
+  }else {
+    res.status(404).end();
+  }
 });
 
 // get user by id
@@ -73,9 +87,31 @@ router.post('/reset-password', function(req, res) {
       });
     });
   } else {
-    res.status(404).end();
+    return res.status(404).end();
   }
 });
+
+// logout user
+router.post('/logout', ensureAuthenticated, function(req, res) {
+  req.logout();
+  res.status(200).end();
+});
+
+function getFollowingForUser(req,res) {
+  User.findOne({id : req.query.userID}, function(err, user) {
+    if(err) {
+      return res.status(500).end();
+    }
+   
+    if(!user.following || user.following.length == 0) {
+      return res.send({followers : []});
+    }
+   
+    return res.send({following : user.following});
+  });
+}
+
+
 
 function sendPasswordResetEmail(newPassword, done) {
   
@@ -125,6 +161,30 @@ function handleGetUsersRequest(req, res) {
       return user.makeEmberUser();
     });
     return res.send({users : emberUsers});
+  });
+}
+
+function handleFollowUserRequest(req, res){
+  User.findByIdAndUpdate(req.user._id, 
+    {$addToSet : {following : req.query.userId}},
+    function(err,updatedUser){
+      if (err) {
+        res.sendStatus(500);
+      } else {
+        return res.send({user : updatedUser.makeEmberUser()});
+      }
+  });
+}
+
+function handleUnFollowUserRequest(req,res) {
+  User.findByIdAndUpdate(req.user._id, 
+    {$pull : {following : req.query.userId}},
+    function(err,updatedUser){
+      if (err) {
+        res.sendStatus(500);
+      } else {
+        return res.send({user : updatedUser.makeEmberUser()});
+      }
   });
 }
 
