@@ -7,13 +7,14 @@ var userSchema = mongoose.Schema({
     name: String,
     email: String,
     following : []
-    
-    //followers : []
-    // use query to fetch followers, $in
   });
 
-userSchema.methods.makeEmberUser = function () {
-   return {username: this.id, email: this.email, following: this.following};
+userSchema.methods.makeEmberUser = function (loggedInUser) {  
+  var followed = false;
+  if(loggedInUser) {
+     followed = (this.following.indexOf(loggedInUser.id) != -1) ;
+  } 
+  return {username: this.id, email: this.email, following: this.following, followed: followed};
 }
 
 userSchema.methods.checkUserPassword = function (userPassword, done) {

@@ -41,7 +41,7 @@ router.put('/', ensureAuthenticated, function(req,res) {
 router.get('/:userId', function(req, res) {
   User.findOne({id : req.params.userId }, function(err, user) {
     if (err) return res.status(500).send('error getting user by id');
-    return res.send({users : [user.makeEmberUser()]});
+    return res.send({users : [user.makeEmberUser(req.user)]});
   });
 });
 
@@ -157,10 +157,10 @@ function handleLoginRequest(req, res) {
     var authenticate = passport.authenticate('local', function(err, user, info) {
       if (err) return res.status(500).end(); 
       if (!user) return res.status(404).send(info);
-      logger.info('login successful. user: ', user.makeEmberUser());   
+      logger.info('login successful. user: ', user.makeEmberUser(req.user));   
       req.logIn(user, function(err) { 
         if (err) return res.status(500).end();
-        var emberuser = user.makeEmberUser();
+        var emberuser = user.makeEmberUser(req.user);
         return res.send({users : [emberuser]});
       });
     });
@@ -173,7 +173,7 @@ function handleGetUsersRequest(req, res) {
       return res.status(500).end();
     }
     var emberUsers = users.map(function(user) {
-      return user.makeEmberUser();
+      return user.makeEmberUser(req.user);
     });
     return res.send({users : emberUsers});
   });
@@ -186,7 +186,7 @@ function handleFollowUserRequest(req, res){
       if (err) {
         res.sendStatus(500);
       } else {
-        return res.send({user : updatedUser.makeEmberUser()});
+        return res.send({user : updatedUser.makeEmberUser(req.user)});
       }
   });
 }
@@ -198,7 +198,7 @@ function handleUnFollowUserRequest(req,res) {
       if (err) {
         res.sendStatus(500);
       } else {
-        return res.send({user : updatedUser.makeEmberUser()});
+        return res.send({user : updatedUser.makeEmberUser(req.user)});
       }
   });
 }
@@ -214,7 +214,7 @@ function saveUser(user,req,res) {
       if (err) {
         return res.status(500).end();
       }
-      return res.send({user: user.makeEmberUser()});
+      return res.send({user: user.makeEmberUser(req.user)});
     });
   });
 }
