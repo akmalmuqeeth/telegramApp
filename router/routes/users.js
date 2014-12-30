@@ -29,9 +29,9 @@ router.get('/',function(req,res) {
 // follow user
 router.put('/', ensureAuthenticated, function(req,res) {
   if(req.query.operation == 'follow') {
-    return handleFollowUserRequest(req,res);
+    return updateUser(req, res , {$addToSet : {following : req.query.userId}});
   } if (req.query.operation == 'unfollow') {
-    return handleUnFollowUserRequest(req, res);
+    return updateUser(req, res , {$pull : {following : req.query.userId}});
   }else {
     res.status(404).end();
   }
@@ -104,11 +104,9 @@ function getFollowingForUser(req,res) {
     if(err) {
       return res.status(500).end();
     }
-   
     if(!user.following || user.following.length == 0) {
       return res.send({followers : []});
     }
-   
     return res.send({following : user.following});
   });
 }
@@ -118,11 +116,9 @@ function getFollowersForUser(req, res){
     if(err) {
       return res.status(500).end();
     }    
-
   var followers = users.map(function(user) {
       return user.id;
     });
-
     return res.send({followers : followers});
   });
 
@@ -179,24 +175,10 @@ function handleGetUsersRequest(req, res) {
   });
 }
 
-function handleFollowUserRequest(req, res){
-  User.findByIdAndUpdate(req.user._id, 
-    {$addToSet : {following : req.query.userId}},
-    function(err,updatedUser){
+function updateUser(req,res,updateData) {
+  User.findByIdAndUpdate(req.user._id, updateData, function(err,updatedUser){
       if (err) {
-        res.sendStatus(500);
-      } else {
-        return res.send({user : updatedUser.makeEmberUser(req.user)});
-      }
-  });
-}
-
-function handleUnFollowUserRequest(req,res) {
-  User.findByIdAndUpdate(req.user._id, 
-    {$pull : {following : req.query.userId}},
-    function(err,updatedUser){
-      if (err) {
-        res.sendStatus(500);
+        return res.sendStatus(500);
       } else {
         return res.send({user : updatedUser.makeEmberUser(req.user)});
       }
