@@ -1,4 +1,5 @@
 var mongoose = require('mongoose');
+var logger = require('nlogger').logger(module);
 var bcrypt = require('bcrypt');
 var randomstring = require("randomstring");
 var userSchema = mongoose.Schema({
@@ -23,12 +24,18 @@ userSchema.methods.checkUserPassword = function (userPassword, done) {
   });
 }
 
-userSchema.methods.resetPassword = function(){
-  // generate new password
+userSchema.methods.resetPassword = function(done){
+  var user = this;
   var newPassword = randomstring.generate(7);
   bcrypt.genSalt(10, function(err, salt) {
     bcrypt.hash(newPassword, salt, function(err, hashOfPassword) {
-      this.password = hashOfPassword;
+      if(err) {
+        done(err, null);
+      }
+      user.password = hashOfPassword;
+      user.save(function(err) {
+        done(err, newPassword);
+      });
     });
   });
 }

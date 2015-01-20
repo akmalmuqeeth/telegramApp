@@ -73,20 +73,14 @@ router.post('/reset-password', function(req, res) {
       if (err) {
         return res.status(500).send('error while fetching user by email');
       }
-      var newPassword = randomstring.generate(7);
-      bcrypt.genSalt(10, function(err, salt) {
-        bcrypt.hash(newPassword, salt, function(err, hashOfPassword) {
-          user.password = hashOfPassword;
-          User.findByIdAndUpdate(user._id, {$set: {password : hashOfPassword }}, function(err, updatedUser){
-            if (err) { 
-              return res.status(500).send('error saving user after password reset');
-            } 
-            sendPasswordResetEmail(newPassword, function(err){
-              return res.status(200).end();
-            });
-          });
+      user.resetPassword(function(err, newPassword){
+        if (err) {
+          return res.status(500).send('error while resetting user password');
+        }
+        sendPasswordResetEmail(newPassword, function(err){
+          return res.status(200).end();
         });
-      });
+      });      
     });
   } else {
     return res.status(404).end();
