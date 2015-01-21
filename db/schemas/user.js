@@ -40,6 +40,17 @@ userSchema.methods.resetPassword = function(done){
   });
 }
 
+userSchema.methods.follow = function(userIdToFollow, done){
+    this.model('user').findByIdAndUpdate(this._id, {$addToSet : {following : userIdToFollow}}, function(err,updatedUser){
+        return done(err,updatedUser);
+    });
+}
+userSchema.methods.unfollow = function(userIdToUnFollow, done){
+  this.model('user').findByIdAndUpdate(this._id, {$pull : {following : userIdToUnFollow}}, function(err,updatedUser){
+    return done(err,updatedUser);
+  });
+}
+
 userSchema.statics.hashPassword = function(password, done){
   bcrypt.genSalt(10, function(err, salt) {
     bcrypt.hash(password, salt, function(err, hashedPassword){

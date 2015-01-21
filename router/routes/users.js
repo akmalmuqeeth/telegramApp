@@ -2,9 +2,7 @@ var express = require('express');
 var router = express.Router();
 var passport = require('../../auth');
 var logger = require('nlogger').logger(module);
-var bcrypt = require('bcrypt');
 var User = require('../../db').model('user');
-var randomstring = require("randomstring");
 var nconf = require("../../config");
 var mailgun = require('mailgun-js')(nconf.get('mailgun'));
 var fs = require('fs');
@@ -20,18 +18,25 @@ router.get('/',function(req,res) {
     return getFollowingForUser(req, res);
   } else if(req.query.operation == 'followers') {
     return getFollowersForUser(req, res);
-  } else { 
+  } else {
     logger.info("retrieving all users");
     return handleGetUsersRequest(req, res);
-  }     
+  }
 });
 
 // follow user
 router.put('/', ensureAuthenticated, function(req,res) {
+  var updateCallback = function(err, updatedUser) {
+    if (err) {
+      return res.sendStatus(500);
+    } else {
+      return res.send({user : updatedUser.makeEmberUser(req.user)});
+    }
+  }
   if(req.query.operation == 'follow') {
-    return updateUser(req, res , {$addToSet : {following : req.query.userId}});
+    return req.user.follow(req.query.userId, updateCallback);
   } if (req.query.operation == 'unfollow') {
-    return updateUser(req, res , {$pull : {following : req.query.userId}});
+      return req.user.unfollow(req.query.userId, updateCallback);
   }else {
     res.status(404).end();
   }
@@ -62,7 +67,7 @@ router.post('/', function(req, res) {
 
   } else {
     logger.error("failed to add user with req: " , req.body);
-    res.status(404).end();    
+    res.status(404).end();
   }
 });
 
@@ -80,7 +85,7 @@ router.post('/reset-password', function(req, res) {
         sendPasswordResetEmail(newPassword, function(err){
           return res.status(200).end();
         });
-      });      
+      });
     });
   } else {
     return res.status(404).end();
@@ -109,7 +114,7 @@ function getFollowersForUser(req, res){
   User.find({'following' : {$in : [req.query.userID]} }, function(err, users){
     if(err) {
       return res.status(500).end();
-    }    
+    }
   var followers = users.map(function(user) {
       return user.id;
     });
@@ -119,7 +124,7 @@ function getFollowersForUser(req, res){
 }
 
 function sendPasswordResetEmail(newPassword, done) {
-  
+
   fs.readFile('/Users/akmalmuqeeth/Documents/meantest/telegramApp/templates/reset.hbs', 'utf-8',function (err, data) {
     if (err) throw err;
 
@@ -145,10 +150,10 @@ function sendPasswordResetEmail(newPassword, done) {
 function handleLoginRequest(req, res) {
   logger.info("attempting to login");
     var authenticate = passport.authenticate('local', function(err, user, info) {
-      if (err) return res.status(500).end(); 
+      if (err) return res.status(500).end();
       if (!user) return res.status(404).send(info);
-      logger.info('login successful. user: ', user.makeEmberUser(req.user));   
-      req.logIn(user, function(err) { 
+      logger.info('login successful. user: ', user.makeEmberUser(req.user));
+      req.logIn(user, function(err) {
         if (err) return res.status(500).end();
         var emberuser = user.makeEmberUser(req.user);
         return res.send({users : [emberuser]});
@@ -186,7 +191,7 @@ function saveUser(user,req,res) {
       return res.status(500).end();
     }
     logger.info("user saved successfully");
-    req.logIn(user, function(err) { 
+    req.logIn(user, function(err) {
       if (err) {
         return res.status(500).end();
       }
