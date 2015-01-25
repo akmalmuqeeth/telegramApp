@@ -4,7 +4,7 @@ var express = require('express'),
   nconf = require('./config'),
   conn = require('./db');
 
-require('./middlewares')(app);
+require('./middlewares')(app,conn);
 require('./router')(app);
 
 conn.on('error', function(err) {
