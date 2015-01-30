@@ -1,9 +1,9 @@
-var logger = require('nlogger').logger(module);
-var db = require('../../db');
-var userModel = db.model('user');
+var logger = require('nlogger').logger(module)
+  , db = require('../../db')
+  , user = db.model('user');
 
 module.exports = function (username, password, done) {
-  userModel.findOne({id : username}, function(err, user) {
+  user.findOne({id : username}, function(err, user) {
     if (err) {
       logger.error('Error finding user with id: ', username, ' Err: ', err);
       return done(err);

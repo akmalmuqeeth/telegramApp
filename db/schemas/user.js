@@ -1,8 +1,8 @@
-var mongoose = require('mongoose');
-var logger = require('nlogger').logger(module);
-var bcrypt = require('bcrypt');
-var randomstring = require("randomstring");
-var userSchema = new mongoose.Schema({
+var mongoose = require('mongoose')
+  , logger = require('nlogger').logger(module)
+  , bcrypt = require('bcrypt')
+  , randomstring = require("randomstring")
+  , userSchema = new mongoose.Schema({
     id : String,
     password: String,
     name: String,

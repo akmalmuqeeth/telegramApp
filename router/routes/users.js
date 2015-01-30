@@ -1,13 +1,13 @@
-var express = require('express');
-var router = express.Router();
-var passport = require('../../auth');
-var logger = require('nlogger').logger(module);
-var User = require('../../db').model('user');
-var nconf = require("../../config");
-var mailgun = require('mailgun-js')(nconf.get('mailgun'));
-var fs = require('fs');
-var Handlebars = require('handlebars');
-var ensureAuthenticated = require('../../middlewares/ensureAuthentication');
+var express = require('express')
+  , router = express.Router()
+  , passport = require('../../auth')
+  , logger = require('nlogger').logger(module)
+  , user = require('../../db').model('user')
+  , nconf = require("../../config")
+  , mailgun = require('mailgun-js')(nconf.get('mailgun'))
+  , fs = require('fs')
+  , handlebars = require('handlebars')
+  , ensureAuthenticated = require('../../middlewares/ensureAuthentication');
 
 
 // login and getAllUsers
@@ -44,7 +44,7 @@ router.put('/', ensureAuthenticated, function(req,res) {
 
 // get user by id
 router.get('/:userId', function(req, res) {
-  User.findOne({id : req.params.userId }, function(err, user) {
+  user.findOne({id : req.params.userId }, function(err, user) {
     if (err) return res.status(500).send('error getting user by id');
     return res.send({users : [user.makeEmberUser(req.user)]});
   });
@@ -55,12 +55,12 @@ router.post('/', function(req, res) {
   logger.info("attempting to add user with req: ", req.body);
   if (req.body) {
     var userPassword = req.body.password;
-    User.hashPassword(userPassword, function(err, hashedPassword) {
+    user.hashPassword(userPassword, function(err, hashedPassword) {
       if( err ){
         logger.error('Error hashing password. Error: ' ,err);
         return res.status(500).end();
       }
-      var user = new User({id:req.body.id,password:hashedPassword,
+      var user = new user({id:req.body.id,password:hashedPassword,
        name: req.body.name, email : req.body.email});
       return saveUser(user, req, res);
     });
@@ -74,7 +74,7 @@ router.post('/', function(req, res) {
 // reset password
 router.post('/reset-password', function(req, res) {
   if(req.body.email) {
-    User.findOne({email : req.body.email }, function(err, user){
+    user.findOne({email : req.body.email }, function(err, user){
       if (err) {
         return res.status(500).send('error while fetching user by email');
       }
@@ -99,7 +99,7 @@ router.post('/logout', ensureAuthenticated, function(req, res) {
 });
 
 function getFollowingForUser(req,res) {
-  User.findOne({id : req.query.userID}, function(err, user) {
+  user.findOne({id : req.query.userID}, function(err, user) {
     if(err) {
       return res.status(500).end();
     }
@@ -111,7 +111,7 @@ function getFollowingForUser(req,res) {
 }
 
 function getFollowersForUser(req, res){
-  User.find({'following' : {$in : [req.query.userID]} }, function(err, users){
+  user.find({'following' : {$in : [req.query.userID]} }, function(err, users){
     if(err) {
       return res.status(500).end();
     }
@@ -128,7 +128,7 @@ function sendPasswordResetEmail(newPassword, done) {
   fs.readFile('/Users/akmalmuqeeth/Documents/meantest/telegramApp/templates/reset.hbs', 'utf-8',function (err, data) {
     if (err) throw err;
 
-    var template = Handlebars.compile(data);
+    var template = handlebars.compile(data);
 
     var context = {password: newPassword}
     var html    = template(context);
@@ -163,7 +163,7 @@ function handleLoginRequest(req, res) {
 }
 
 function handleGetUsersRequest(req, res) {
-  User.find({}, function(err, users) {
+  user.find({}, function(err, users) {
     if(err) {
       return res.status(500).end();
     }
@@ -175,7 +175,7 @@ function handleGetUsersRequest(req, res) {
 }
 
 function updateUser(req,res,updateData) {
-  User.findByIdAndUpdate(req.user._id, updateData, function(err,updatedUser){
+  user.findByIdAndUpdate(req.user._id, updateData, function(err,updatedUser){
       if (err) {
         return res.sendStatus(500);
       } else {

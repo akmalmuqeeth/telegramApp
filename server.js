@@ -1,8 +1,8 @@
-var express = require('express'), 
-  app = express(),
-  logger = require('nlogger').logger(module),
-  nconf = require('./config'),
-  conn = require('./db');
+var express = require('express')
+  , app = express()
+  , logger = require('nlogger').logger(module)
+  , nconf = require('./config')
+  , conn = require('./db');
 
 require('./middlewares')(app,conn);
 require('./router')(app);

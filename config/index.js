@@ -1,6 +1,6 @@
-var fs    = require('fs');
-var nconf = require('nconf');
-var path = require ('path');
+var fs    = require('fs')
+  , nconf = require('nconf')
+  , path = require ('path');
 
 nconf.argv()
   .env()

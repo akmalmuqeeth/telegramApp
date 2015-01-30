@@ -1,15 +1,15 @@
-var passport = require('passport');
-var passportLocal = require('passport-local');
-var logger = require('nlogger').logger(module);
-var User = require('../db').model('user');
-var localStrategy = require('./strategy/local');
+var passport = require('passport')
+  , passportLocal = require('passport-local')
+  , logger = require('nlogger').logger(module)
+  , user = require('../db').model('user')
+  , localStrategy = require('./strategy/local');
 
 passport.serializeUser(function(user, done) {
   done(null, user.id);
 });
 
 passport.deserializeUser(function(id, done) {
-  User.findOne({id: id}, function(err, doc){
+  user.findOne({id: id}, function(err, doc){
     done(null, doc);
   });
 });

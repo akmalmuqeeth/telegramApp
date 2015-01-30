@@ -1,9 +1,9 @@
-var bodyParser = require('body-parser');
-var passport = require('../auth');
-var cookieParser = require('cookie-parser');
-var expressSession = require('express-session');
-var nconf = require('../config');
-var MongoStore = require('connect-mongostore')(expressSession);
+var bodyParser = require('body-parser')
+  , passport = require('../auth')
+  , cookieParser = require('cookie-parser')
+  , expressSession = require('express-session')
+  , nconf = require('../config')
+  , MongoStore = require('connect-mongostore')(expressSession);
 
 module.exports = function (app, conn) {
   app.use(bodyParser.json());
