@@ -9,9 +9,7 @@ passport.serializeUser(function(user, done) {
 });
 
 passport.deserializeUser(function(id, done) {
-  user.findOne({id: id}, function(err, doc){
-    done(null, doc);
-  });
+  user.findOne({id: id}, done);
 });
 
 passport.use(new passportLocal.Strategy(localStrategy));
